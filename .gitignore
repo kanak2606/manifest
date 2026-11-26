@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+env/
+venv/
+ENV/
+.pytest_cache/
+
+# Environment & Local State
+.env
+.tablet_ip
+*.log
+
+# Data and SQLite
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/.jwt_secret
+data/uploads/*
+!data/uploads/.gitkeep
+data/backups/*
+!data/backups/.gitkeep
+notetrace.pid
+logs/
+
+# Generated / Temporary Artifacts
+*.zip
+*.tar.gz
+temp_audio/
+test_screenshots/
+preview_*.html
+test_preview_*.html
+
+# Node & original clone (reference only)
+node_modules/
+original_repo/
+dist/
+
+# OS and IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

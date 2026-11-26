@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!--
+    Workbox also precaches the build-time index so an installed app can open
+    offline. That document has no Express-injected config. A controlled page
+    can recover the same mount path from its active worker's URL before the
+    app's module graph reads __NOTE_CONFIG__; a server-injected value remains
+    authoritative on network responses.
+  -->
+  <script data-base-path-fallback>
+    (function() {
+      if (window.__NOTE_CONFIG__ || !navigator.serviceWorker) return;
+      var controller = navigator.serviceWorker.controller;
+      if (!controller || !controller.scriptURL) return;
+      var basePath = new URL('.', controller.scriptURL).pathname.replace(/\/$/, '');
+      window.__NOTE_CONFIG__ = { basePath: basePath === '/' ? '' : basePath };
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0A0B0F" id="theme-color-meta" />
+  <!-- Fonts served by this instance, never from a CDN. See public/fonts/fonts.css. -->
+  <link rel="stylesheet" href="./fonts/fonts.css" />
+  <title>Manifest</title>
+  <!-- VitePWA injects its own <link rel="manifest"> with a relative href that
+       respects the Vite base config — keeping this hand-written one as a no-op
+       fallback would resolve to the wrong absolute path under BASE_URL. -->
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png?v=dev06" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png?v=dev06" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon-180.png?v=dev06" />
+
+  <!-- Apply theme before first paint to prevent flash of wrong colour -->
+  <!-- Disable service worker in Capacitor native mode (assets served natively, SW causes offline.html redirect) -->
+  <script>
+    (function() {
+      // Clear stale caches whenever app version changes or on local development
+      var APP_VER = 'v1.4.0';
+      var savedVer = localStorage.getItem('manifest_cache_version');
+      var isLocalDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      var isNativeShell = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+      if (true) { // Force cache bust on local updates
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            regs.forEach(function(r) { r.unregister(); });
+          });
+          navigator.serviceWorker.register = function() { return Promise.resolve(); };
+        }
+        if ('caches' in window) {
+          caches.keys().then(function(keys) {
+            keys.forEach(function(k) { caches.delete(k); });
+          });
+        }
+        localStorage.setItem('manifest_cache_version', APP_VER);
+      }
+
+      var _raw = localStorage.getItem('wl_appearance');
+      var appearance = _raw ? JSON.parse(_raw) : 'system';
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var dark = appearance === 'dark' || (appearance === 'system' && prefersDark);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      var meta = document.getElementById('theme-color-meta');
+      if (meta) meta.content = dark ? '#0A0B0F' : '#F5F7FA';
+    })();
+  </script>
+
+  <script type="module" crossorigin src="./assets/index-dbC8stzA.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/vendor-7y5jncNp.js">
+  <link rel="stylesheet" crossorigin href="./assets/index-CVFxVIlr.css">
+<link rel="manifest" href="./manifest.webmanifest"></head>
+<body>
+  <div id="app"></div>
+</body>
+</html>
