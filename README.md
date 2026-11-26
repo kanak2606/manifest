@@ -1,8 +1,8 @@
-# Manifest
+# Manifest — Local-First Second Brain, PKM & MCP Productivity Engine
 
-Self-hosted, local-first workspace for **notes, tasks, habits, focus timers, and analytics** — powered by **FastAPI + SQLite (WAL & FTS5)** with a pre-built static UI and zero Docker or Node.js runtime dependencies.
+A **self-hosted, local-first, privacy-first** Personal Knowledge Management (**PKM**) and productivity workspace built on **FastAPI** and zero-config **SQLite (WAL + FTS5)** with a built-in **Model Context Protocol (MCP) server** for AI agents — no Docker or Node.js runtime required.
 
-Runs on **Windows** and **Android/Termux** (with a real-time `/display` kiosk mode for **NiKiosk**).
+Runs on **Windows**, **Linux**, and **Android / Termux** with a real-time `/display` **kiosk dashboard** for **NiKiosk**.
 
 ---
 
@@ -10,10 +10,10 @@ Runs on **Windows** and **Android/Termux** (with a real-time `/display` kiosk mo
 
 ```mermaid
 flowchart LR
-    subgraph Clients["Clients"]
-        B["Desktop / Laptop Browser<br/>Full Editor UI"]
-        K["Tablet NiKiosk (/display)<br/>Read-Only Dashboard"]
-        M["MCP / API Clients<br/>Bearer PAT (note_pat_*)"]
+    subgraph Clients["Clients & AI Agents"]
+        B["Desktop / Laptop Browser<br/>Full PKM & Editor UI"]
+        K["Tablet NiKiosk (/display)<br/>Real-Time Kiosk Dashboard"]
+        M["AI Agents & MCP Clients<br/>JSON-RPC /api/mcp (PAT)"]
     end
 
     subgraph Edge["FastAPI Middleware (main.py)"]
@@ -23,26 +23,26 @@ flowchart LR
     end
 
     subgraph Routers["API Routers (notetrace_backend/routers/)"]
-        R_NOTES["Notes & Checklists<br/>notes.py · labels.py · public_notes.py"]
-        R_PROD["Productivity<br/>habits.py · focus.py · analytics.py"]
+        R_NOTES["Second Brain & PKM<br/>notes.py · labels.py · public_notes.py"]
+        R_PROD["Productivity & Habits<br/>habits.py · focus.py · analytics.py"]
         R_RT["Real-Time & Sync<br/>display.py (SSE) · sync.py · notify.py"]
-        R_EXT["Integrations & Ops<br/>mcp.py · webhooks.py · full_backup.py · ai.py"]
+        R_EXT["AI, MCP & Backups<br/>mcp.py · ai.py · webhooks.py · full_backup.py"]
     end
 
     subgraph Core["Core Engine"]
-        LOGIC["notes_logic.py<br/>CRUD · Wikilinks · Search"]
+        LOGIC["notes_logic.py<br/>CRUD · Wikilinks · FTS5 Search"]
         SCHED["scheduler.py<br/>Reminders & Trash Purge"]
         EVT["events.py<br/>SSE Event Bus"]
     end
 
-    subgraph Storage["Persistence Layer"]
+    subgraph Storage["Local-First Persistence"]
         DB[("SQLite (WAL + FTS5)<br/>data/notetrace.db")]
         FS[("Attachments & Backups<br/>data/uploads/ · data/backups/")]
     end
 
     B -->|HTTP :8000| AUTH
     K -->|SSE /api/display/stream| AUTH
-    M -->|JSON-RPC /api/mcp| AUTH
+    M -->|MCP JSON-RPC| AUTH
 
     AUTH --> CSRF --> STATIC
     CSRF --> R_NOTES & R_PROD & R_RT & R_EXT
@@ -61,14 +61,12 @@ flowchart LR
 
 ---
 
-## Features
+## Key Capabilities
 
-- **Notes & Checklists:** Markdown, drag-and-drop checklists, drawings, file/image uploads, PDF.js viewer, `[[Title]]` wikilinks, backlinks, and FTS5 full-text search.
-- **Tasks & Reminders:** Due dates, recurring rules (`daily`, `weekly`, `monthly`, `yearly`, `weekdays`), and RRULE reminders.
-- **Habits & Focus (`/api/habits`, `/api/focus`):** Custom habit tracking, streaks, and Pomodoro/focus sessions linked to notes or tasks.
-- **Analytics (`/api/analytics`):** Task completion, focus time, and habit metrics.
-- **Kiosk Mode (`/display`):** Live clock, pinned notes, due tasks, and instant SSE updates (`/api/display/stream`).
-- **Auth, Sync & Integrations:** Multi-user bcrypt/JWT auth, shared note roles (`view`/`edit`), Personal Access Tokens (`note_pat_*`), `/api/mcp` JSON-RPC endpoint, webhooks, and ZIP backups.
+- **Second Brain & PKM:** Markdown notes, `[[Title]]` wikilinks, backlinks, drag-and-drop checklists, drawings, PDF.js viewer, and instant **SQLite FTS5** full-text search.
+- **Native MCP Server (`/api/mcp`):** JSON-RPC endpoint (`list_notes`, `get_note`, `create_note`) secured by Personal Access Tokens (`note_pat_*`) for connecting **AI coding assistants and agentic workflows**.
+- **Tasks, Habits & Focus:** Recurring tasks (RRULE), custom **habit tracker** with streaks (`/api/habits`), **Pomodoro / focus timer** (`/api/focus`), and **productivity analytics** (`/api/analytics`).
+- **Offline-First & Kiosk Ready (`/display`):** Single-file SQLite persistence, live Server-Sent Events (`/api/display/stream`), webhooks, multi-device sync, and ZIP backups.
 
 ---
 
@@ -81,16 +79,16 @@ python -m venv .venv
 pip install -r requirements.txt
 python run.py
 ```
-Access at `http://localhost:8000` (or the LAN IP printed in the console).
+Open `http://localhost:8000` (or the LAN IP printed in the terminal).
 
-### Samsung Tablet (Termux + NiKiosk)
-Install **Termux** and **Termux:Boot** from F-Droid, copy the project to `~/NoteTrace`, and run:
+### Android / Termux + NiKiosk
+Install **Termux** and **Termux:Boot** from F-Droid, copy to `~/NoteTrace`, and run:
 ```bash
 cd ~/NoteTrace && chmod +x termux/*.sh
 ./termux/install.sh
 ./termux/start.sh      # Stop anytime with ./termux/stop.sh
 ```
-Point **NiKiosk** to `http://127.0.0.1:8000/display` and set Termux battery optimization to **Unrestricted**.
+Set **NiKiosk** URL to `http://127.0.0.1:8000/display` and Termux battery to **Unrestricted**.
 
 ---
 
@@ -100,7 +98,7 @@ Point **NiKiosk** to `http://127.0.0.1:8000/display` and set Termux battery opti
 http://<HOST_IP>:8000/?u=admin&p=YOUR_PASSWORD&redirect=/display
 http://<HOST_IP>:8000/?token=note_pat_...&redirect=/display
 ```
-Sets an `HttpOnly` session cookie and issues an immediate HTTP 303 redirect to strip credentials from browser history.
+Sets an `HttpOnly` cookie and issues an HTTP 303 redirect to strip credentials from browser history.
 
 ---
 
