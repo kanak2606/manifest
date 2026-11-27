@@ -4,6 +4,10 @@ A **self-hosted, local-first, privacy-first** Personal Knowledge Management (**P
 
 Runs on **Windows**, **Linux**, and **Android / Termux** with a real-time `/display` **kiosk dashboard** for **NiKiosk**.
 
+<p align="center">
+  <img src="docs/manifest-launch.gif" alt="Manifest Product Launch Demo — Notes, Habits, Focus Timer, Analytics & Kiosk" width="100%" />
+</p>
+
 ---
 
 ## Technical Architecture
